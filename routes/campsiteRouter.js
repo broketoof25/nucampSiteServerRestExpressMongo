@@ -19,10 +19,10 @@ campsiteRouter.route('/')
     //using next(err) let's node deal with error handling
     .catch(err => next(err));
 })
-.post(authenticate.verifyUser, (req, res, next) => {
-    //through the create method Mongoose will check to ensure the 
-    //data is correct according to schema, like running it through
-    //a model.
+.post((req, res, next) => {
+    console.log('Authorization header (POST /campsites):', req.headers.authorization);
+    next();
+}, authenticate.verifyUser, (req, res, next) => {
     Campsite.create(req.body)
     .then(campsite => {
         console.log('Campsite Created', campsite)
