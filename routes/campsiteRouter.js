@@ -7,6 +7,7 @@ campsiteRouter.route('/')
 //next function the 3rd arg below is for error handling
 .get((req, res, next) => {
     Campsite.find()
+    .populate('comments.author')
     //the above returns a PROMISE with value, so we can chain with 
     //.then and store the value in campsites
     .then(campsites => {
@@ -50,6 +51,7 @@ campsiteRouter.route('/')
 campsiteRouter.route('/:campsiteId')
 .get((req, res, next) => {
     Campsite.findById(req.params.campsiteId)
+    .populate('comments.author')
     .then(campsite => {
         res.statusCode = 200,
         res.setHeader('Content-Type', 'application/json');
@@ -85,6 +87,7 @@ campsiteRouter.route('/:campsiteId')
 campsiteRouter.route('/:campsiteId/comments')
 .get((req, res, next) => {
     Campsite.findById(req.params.campsiteId)
+    .populate('comments.author')
     //findById returns a PROMISE with an Object, the Object has the data
     //of the campsite so .then(campsite) will use that data
     .then(campsite => {
@@ -105,6 +108,7 @@ campsiteRouter.route('/:campsiteId/comments')
     Campsite.findById(req.params.campsiteId)
     .then(campsite => {
         if (campsite) {
+            req.body.author = req.user._id;
             //push new comment into the comments array
             campsite.comments.push(req.body);
             //save change to MongoDB Database
@@ -155,6 +159,7 @@ campsiteRouter.route('/:campsiteId/comments')
 campsiteRouter.route('/:campsiteId/comments/:commentId')
 .get((req, res, next) => {
     Campsite.findById(req.params.campsiteId)
+    .populate('comments.author')
     .then(campsite => {
         if (campsite && campsite.comments.id(req.params.commentId)) {
             res.statusCode = 200;
