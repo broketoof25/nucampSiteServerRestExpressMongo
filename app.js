@@ -25,6 +25,21 @@ connect.then(() => console.log('Connected correctly to server'), err => console.
 
 var app = express();
 
+// Secure traffic only
+//this app.all() catches every type of request that comes into server so
+//needs to be added below the var app = express() line, which initializes express()
+//'*' - this is wildcard for the path
+app.all('*', (req, res, next) => {
+  //if request is sent via https, req.secure is TRUE, then pass control to the next() 
+  //middleware function
+  if (req.secure) {
+    return next();
+  } else {
+      console.log(`Redirecting to: https://${req.hostname}:${app.get('secPort')}${req.url}`);
+      res.redirect(301, `https://${req.hostname}:${app.get('secPort')}${req.url}`);
+  }
+});
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
@@ -60,5 +75,7 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
+
+
 
 module.exports = app;

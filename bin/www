@@ -4,30 +4,66 @@
  * Module dependencies.
  */
 
+
 var app = require('../app');
 var debug = require('debug')('nucampsiteserver:server');
 var http = require('http');
 
+const https = require('https');
+const fs = require('fs');
+
 /**
  * Get port from environment and store in Express.
  */
-
+//development uses port 3000
 var port = normalizePort(process.env.PORT || '3000');
 app.set('port', port);
+//Prod should use 80 for http and 443 for https
+//app.set sets a variable 'secPort that can be accessed anywhere for the
+//express application
+app.set('secPort', port+443);
+
 
 /**
  * Create HTTP server.
  */
-
+//express generator created the http server here
 var server = http.createServer(app);
+
 
 /**
  * Listen on provided port, on all network interfaces.
  */
-
+//express generator starting the server here
 server.listen(port);
 server.on('error', onError);
 server.on('listening', onListening);
+
+/**
+ * Create HTTPs server.
+ */
+//we are setting up the private and public key here, const options is an object
+//with two properties, key and cert
+const options = {
+  key: fs.readFileSync(__dirname+'/server.key'),
+  cert: fs.readFileSync(__dirname+'/server.cert')
+};
+
+//use options object above to configure https server
+const secureServer = https.createServer(options, app);
+
+/**
+ * Listen on provided port, on all network interfaces.
+ */
+//express generator starting the server here
+//app.get() method below is used to grab the secPort from the app.set()
+//on line 24 of this code
+secureServer.listen(app.get('secPort'), () => {
+  console.log('Server listening on port', app.get('secPort'));
+});
+secureServer.on('error', onError);
+secureServer.on('listening', onListening);
+
 
 /**
  * Normalize a port into a number, string, or false.
